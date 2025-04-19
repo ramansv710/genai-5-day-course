@@ -1,4 +1,4 @@
-# Okay, here is a Google Colab Notebook implementing the "Personalized Carbonated Drink Recommender with Dietary and Health Considerations" using Gemini models and incorporating the requested features.
+# Okay, here is a Google Kaggle Notebook implementing the "Personalized Carbonated Drink Recommender with Dietary and Health Considerations" using Gemini models and incorporating the requested features.
 # Key Features Implemented:
 # Embeddings: Used Gemini's embedding-001 model to create vector representations of drink descriptions and user queries for semantic understanding.
 # Retrieval Augmented Generation (RAG): Implemented a basic RAG system. User queries are embedded, and the most semantically similar drinks from a pre-defined dataset are retrieved. This retrieved context is then passed to the generative model.
@@ -7,20 +7,18 @@
 # Long Context Window (Implicit): While not explicitly demonstrated with a single massive prompt, the RAG process benefits from Gemini's long context capability by allowing the model to process the user's query plus the retrieved context from multiple relevant drinks simultaneously.
 # Dietary & Health Considerations: Incorporated through the data structure (calories, sugar, caffeine, ingredients), RAG retrieval based on descriptive terms (e.g., "low sugar"), and specific function calls (e.g., filtering by max calories).
 # How to Use This Notebook:
-# Open in Colab: Click the "Open in Colab" badge (if provided) or upload the .ipynb file to Google Colab.
 # Get API Key: You need a Google AI API Key.
 # Go to Google AI Studio.
 # Click "Get API Key".
 # Create or use an existing API key.
-# Set API Key in Colab: In the "Setup" section of the notebook, replace "YOUR_API_KEY" with your actual API key. It's recommended to use Colab's secrets manager for better security.
-# Run All Cells: Select "Runtime" -> "Run all" from the Colab menu.
+# Set API Key in Kaggle: In the "Setup" section of the notebook, replace "YOUR_API_KEY" with your actual API key. It's recommended to use Kaggle's secrets manager for better security.
+# Run All Cells: Select "Runtime" -> "Run all" from the Kaggle menu.
 # Interact: Go to the "Run the Recommender" section and try different user queries.
-
 
 """
 Personalized Carbonated Drink Recommender using Gemini
 
-This Colab Notebook demonstrates how to build a personalized carbonated
+This Kaggle Notebook demonstrates how to build a personalized carbonated
 drink recommender system using Google's Gemini models. It incorporates
 several advanced features:
 
@@ -50,35 +48,25 @@ from sklearn.metrics.pairwise import cosine_similarity # For comparing embedding
 import textwrap                       # For formatting text output nicely
 
 try:
-    # Attempt to get the API key from Colab secrets
+    # Attempt to get the API key from Kaggle secrets
     GOOGLE_API_KEY = "AIzaSyDcE4C9JLpuYJAJ-U2A6yp-Be0Pse5vHHk"
     # Check if the key was actually retrieved
     if not GOOGLE_API_KEY:
         # Raise an error if the secret is not set
-        raise ValueError("API Key not found in Colab secrets. Please add 'GOOGLE_API_KEY' to your Colab secrets.")
+        raise ValueError("API Key not found in Kaggle secrets. Please add 'GOOGLE_API_KEY' to your Kaggle secrets.")
     # Configure the Gemini API client with the retrieved key
     genai.configure(api_key=GOOGLE_API_KEY)
     # Print confirmation message
-    print("Successfully configured Gemini API with key from Colab secrets.")
+    print("Successfully configured Gemini API with key from Kaggle secrets.")
 except Exception as e:
     # Print an error message if configuration fails
     print(f"Error configuring Gemini API: {e}")
     # Provide instructions on how to set the API key
-    print("Please ensure you have added your Google API Key to Colab Secrets (Menu: Insert -> Add secret) with the name 'GOOGLE_API_KEY'.")
+    print("Please ensure you have added your Google API Key to Kaggle Secrets (Menu: Insert -> Add secret) with the name 'GOOGLE_API_KEY'.")
 
 # Define the models to use
 EMBEDDING_MODEL_NAME = "models/embedding-001"     # Model for creating text embeddings
 GENERATIVE_MODEL_NAME = "gemini-1.5-flash-latest" # Powerful generative model with function calling & JSON mode support (gemini-1.5-pro-latest is also a good option)
-
-# --- Helper Functions ---
-
-# Function to format markdown text for better display in Colab
-def to_markdown(text):
-  """Converts text to Markdown format and wraps it for display."""
-  # Replace bullet points for better markdown rendering
-  text = text.replace('•', '  *')
-  # Wrap the text and indent it
-  return textwrap.indent(text, '> ', predicate=lambda _: True)
 
 # @title 1. Data Preparation: Carbonated Drink Dataset
 
@@ -548,19 +536,8 @@ def get_drink_recommendations(user_query, rag_top_n=5):
         final_content_for_json = response.text
 
         # Create a new prompt specifically asking for JSON formatting of the previous response.
-        json_formatting_prompt = f"""
-        Please format the following drink recommendation information into the specified JSON schema.
-        Do not add any extra commentary. Output only the JSON object.
-
-        Information to format:
-        {final_content_for_json}
-
-        JSON Schema to conform to:
-        ```json
-        {json.dumps(json_output_schema, indent=2)}
-        ```
-        """
-
+        json_formatting_prompt = {final_content_for_json}        
+        
         # Generate the final response using JSON mode
         json_response = model.generate_content(
             json_formatting_prompt,
@@ -590,6 +567,7 @@ def get_drink_recommendations(user_query, rag_top_n=5):
             structured_output = json.loads(json_output_text)
             # Print success message
             print("Successfully parsed structured JSON output.")
+            print("Structured Output:" + structured_output)
             # Return the parsed dictionary
             return structured_output
         except json.JSONDecodeError as e:
@@ -670,7 +648,7 @@ print("\nTry modifying the queries in 'Run the Recommender' to test different sc
 
 
 # Explanation of Code Sections:
-# Setup: Installs and imports necessary libraries (google-generativeai, pandas, numpy, scikit-learn). Configures the Gemini API key (using Colab Secrets is recommended for security). Defines model names and helper functions.
+# Setup: Installs and imports necessary libraries (google-generativeai, pandas, numpy, scikit-learn). Configures the Gemini API key (using Kaggle Secrets is recommended for security). Defines model names and helper functions.
 # Data Preparation: Creates a sample pandas DataFrame (df_drinks) containing information about various carbonated drinks. Crucially, it includes nutritional details (calories, sugar, caffeine) and boolean flags for common dietary needs (sugar-free, caffeine-free, zero-calorie). A Combined_Text column is generated to provide rich input for the embedding model.
 # Embeddings:
 # Defines get_embeddings to generate vector embeddings for a list of texts using the specified Gemini embedding model (models/embedding-001). It uses task_type="RETRIEVAL_DOCUMENT" as these embeddings represent the documents we'll search against.
@@ -706,4 +684,4 @@ print("\nTry modifying the queries in 'Run the Recommender' to test different sc
 # Run the Recommender: Provides several example user_query strings demonstrating different types of requests (general preference, specific constraints likely to trigger function calls, flavor focus) and prints the resulting structured JSON recommendations.
 # Documentation and Explanation: A detailed markdown cell explaining all the concepts (Embeddings, RAG, Function Calling, JSON Mode, Long Context, Dietary Needs) and how they are implemented in the notebook.
 # Conclusion: A brief summary message.
-# This notebook provides a comprehensive, runnable example demonstrating the powerful features of Gemini for building sophisticated, context-aware, and controllable AI applications. Remember to replace the placeholder for the API key with your actual key, preferably using Colab Secrets.
+# This notebook provides a comprehensive, runnable example demonstrating the powerful features of Gemini for building sophisticated, context-aware, and controllable AI applications. Remember to replace the placeholder for the API key with your actual key, preferably using Kaggle Secrets.
